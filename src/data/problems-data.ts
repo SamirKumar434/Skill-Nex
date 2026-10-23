@@ -182,6 +182,7 @@ export const PROBLEMS_DATA: ProblemItem[] = [
   },
 ];
 
+// Local storage key for persistent problem status tracking (read-only for legacy data)
 export const STORAGE_PROBLEMS_STATUS_KEY = "skillnex_hdlbits_problems_status_map";
 
 export function getProblemsStatusMap(): Record<string, ProblemStatus> {
@@ -194,18 +195,13 @@ export function getProblemsStatusMap(): Record<string, ProblemStatus> {
   }
 }
 
-export function setProblemStatus(
-  problemId: string,
-  status: ProblemStatus
-): Record<string, ProblemStatus> {
-  const current = getProblemsStatusMap();
-  const updated = { ...current, [problemId]: status };
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(STORAGE_PROBLEMS_STATUS_KEY, JSON.stringify(updated));
-    } catch {
-      // ignore
-    }
-  }
-  return updated;
+/**
+ * Disabled for guest users per SkillNex login-only progress policy.
+ * Authenticated student progress is persisted in PostgreSQL.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function setProblemStatus(_problemId: string, _status: ProblemStatus): Record<string, ProblemStatus> {
+  // No-op for guests: progress writing is restricted to authenticated users in PostgreSQL
+  return getProblemsStatusMap();
 }
+

@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, X, User, LogOut } from "lucide-react";
+import Link from "next/link";
+import { Menu, X, User } from "lucide-react";
+import { Show, UserButton } from "@clerk/nextjs";
 
 interface MenuItem {
   name: string;
@@ -13,10 +15,6 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // mobile menu only
   const [activeItem, setActiveItem] = useState("Home");
-
-  // Auth mock state (can be hooked to user state)
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Lock to avoid immediate scrollspy override during programmatic smooth scroll
   const isManualClickRef = useRef(false);
@@ -85,7 +83,6 @@ export function Navbar() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsMenuOpen(false);
-        setIsDropdownOpen(false);
       }
     };
 
@@ -110,11 +107,6 @@ export function Navbar() {
     clickTimeoutRef.current = setTimeout(() => {
       isManualClickRef.current = false;
     }, 800);
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setIsDropdownOpen(false);
   };
 
   return (
@@ -182,56 +174,41 @@ export function Navbar() {
                 : "opacity-100 translate-x-0"
             }`}
           >
-            {!isAuthenticated ? (
+            <Show when="signed-out">
               <div className="flex items-center gap-1.5 sm:gap-3">
-                <a
-                  href="#faq"
+                <Link
+                  href="/sign-in"
                   className="text-white text-xs sm:text-sm font-medium px-2 sm:px-4 hover:text-[#A855F7] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8B5CF6] rounded-lg whitespace-nowrap"
                 >
                   Login
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/dashboard"
                   className="h-8 sm:h-10 bg-[#8B5CF6] hover:bg-[#7C3AED] shadow-[0_0_20px_rgba(139,92,246,0.45)] text-white rounded-full px-3.5 sm:px-6 inline-flex items-center justify-center text-xs sm:text-sm font-semibold transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8B5CF6] whitespace-nowrap"
                 >
                   Dashboard
-                </a>
+                </Link>
               </div>
-            ) : (
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsDropdownOpen((o) => !o)}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] text-white flex items-center justify-center text-xs sm:text-sm font-bold shadow-[0_0_15px_rgba(139,92,246,0.5)] border border-purple-400/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8B5CF6]"
-                  aria-label="User profile menu"
-                  aria-expanded={isDropdownOpen}
+            </Show>
+
+            <Show when="signed-in">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Link
+                  href="/dashboard"
+                  className="hidden sm:inline-flex h-8 sm:h-9 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-full px-4 items-center justify-center text-xs sm:text-sm font-medium transition-all"
                 >
-                  S
-                </button>
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-52 p-2 bg-[#0D0B16] border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl z-50">
-                    <div className="px-3 py-2 border-b border-white/5 mb-2">
-                      <div className="text-xs text-gray-400">Signed in as</div>
-                      <div className="font-bold text-white text-sm">SkillNex User</div>
-                    </div>
-                    <a
-                      href="/dashboard"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
-                    >
-                      <User size={15} /> Dashboard
-                    </a>
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors mt-1"
-                    >
-                      <LogOut size={15} /> Logout
-                    </button>
-                  </div>
-                )}
+                  Dashboard
+                </Link>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox:
+                        "w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-purple-400/40 shadow-[0_0_15px_rgba(139,92,246,0.5)]",
+                    },
+                  }}
+                />
               </div>
-            )}
+            </Show>
           </div>
 
           {/* Hamburger (mobile / tablet only) */}
@@ -276,47 +253,46 @@ export function Navbar() {
             })}
 
             {/* Auth actions for mobile menu */}
-            {!isAuthenticated ? (
+            <Show when="signed-out">
               <div className="flex gap-2 pt-2 border-t border-white/5 mt-1">
-                <a
-                  href="#faq"
+                <Link
+                  href="/sign-in"
                   onClick={() => setIsMenuOpen(false)}
                   className="flex-1 text-center px-4 py-2.5 rounded-xl text-sm font-medium text-white hover:text-[#A855F7] bg-white/5 transition-all"
                 >
                   Login
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/dashboard"
                   onClick={() => setIsMenuOpen(false)}
                   className="flex-1 text-center px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#8B5CF6] hover:bg-[#7C3AED] shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
                 >
                   Dashboard
-                </a>
+                </Link>
               </div>
-            ) : (
-              <div className="flex flex-col gap-1.5 pt-2 border-t border-white/5 mt-1">
-                <div className="px-4 py-1 text-xs text-gray-400">
-                  Signed in as <span className="text-white font-semibold">SkillNex User</span>
+            </Show>
+
+            <Show when="signed-in">
+              <div className="flex flex-col gap-2 pt-2 border-t border-white/5 mt-1">
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-xs text-gray-300">Account Profile</span>
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-8 h-8 rounded-full border border-purple-400/30",
+                      },
+                    }}
+                  />
                 </div>
-                <a
+                <Link
                   href="/dashboard"
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#8B5CF6] hover:bg-[#7C3AED] shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
                 >
                   <User size={15} /> Dashboard
-                </a>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                >
-                  <LogOut size={15} /> Logout
-                </button>
+                </Link>
               </div>
-            )}
+            </Show>
           </div>
         )}
       </div>

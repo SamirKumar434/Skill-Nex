@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   Code2,
   Search,
@@ -8,15 +8,13 @@ import {
   ChevronDown,
   ChevronUp,
   Layers,
-  Sparkles,
   ArrowLeft,
 } from "lucide-react";
 import {
   DSA_CATEGORIES,
   DsaCategory,
-  getCompletedDsaQuestionIds,
-  toggleDsaQuestionCompletion,
 } from "@/data/dsa-data";
+import { useStudentProgress } from "@/components/progress/ProgressContext";
 import { DsaTopicTable } from "./DsaTopicTable";
 
 interface DsaSectionViewProps {
@@ -24,7 +22,7 @@ interface DsaSectionViewProps {
 }
 
 export function DsaSectionView({ onBackToOverview }: DsaSectionViewProps) {
-  const [completedIds, setCompletedIds] = useState<string[]>([]);
+  const { completedDsaQuestionIds: completedIds, toggleDsaQuestion } = useStudentProgress();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
@@ -36,15 +34,9 @@ export function DsaSectionView({ onBackToOverview }: DsaSectionViewProps) {
     "linked-lists": true,
   });
 
-  // Load persisted question completions on mount
-  useEffect(() => {
-    setCompletedIds(getCompletedDsaQuestionIds());
-  }, []);
-
   const handleToggleQuestion = useCallback((questionId: string) => {
-    const updated = toggleDsaQuestionCompletion(questionId);
-    setCompletedIds(updated);
-  }, []);
+    toggleDsaQuestion(questionId);
+  }, [toggleDsaQuestion]);
 
   // Compute metrics
   const allQuestions = useMemo(() => {

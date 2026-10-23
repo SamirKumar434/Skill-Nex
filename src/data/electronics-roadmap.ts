@@ -1131,7 +1131,7 @@ export const CORE_ELECTRONICS_STAGES: LearningStage[] = [
   },
 ];
 
-// Local storage keys for progress persistence
+// Local storage keys for progress persistence (read-only for legacy data)
 export const STORAGE_COMPLETED_TOPICS_KEY = "preppilot_completed_topics";
 export const STORAGE_COMPLETED_STAGES_KEY = "preppilot_completed_stages";
 
@@ -1145,19 +1145,18 @@ export function getCompletedTopicIds(): string[] {
   }
 }
 
-export function setCompletedTopicIds(ids: string[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_COMPLETED_TOPICS_KEY, JSON.stringify(ids));
-  } catch {
-    // ignore
-  }
+/**
+ * Disabled for guest users per SkillNex login-only progress policy.
+ * Authenticated student progress is persisted in PostgreSQL.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function setCompletedTopicIds(_ids: string[]): void {
+  // No-op for guests: progress writing is restricted to authenticated users in PostgreSQL
 }
 
-export function toggleTopicCompletion(topicId: string): string[] {
-  const current = getCompletedTopicIds();
-  const exists = current.includes(topicId);
-  const updated = exists ? current.filter((id) => id !== topicId) : [...current, topicId];
-  setCompletedTopicIds(updated);
-  return updated;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function toggleTopicCompletion(_topicId: string): string[] {
+  // No-op for guests: returns current read-only snapshot without writing
+  return getCompletedTopicIds();
 }
+

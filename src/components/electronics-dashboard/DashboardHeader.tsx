@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
-import { Search, Menu, X, ChevronRight, Compass, LogOut, PanelLeft } from "lucide-react";
+import { Search, Menu, X, ChevronRight, PanelLeft } from "lucide-react";
+import { Show, UserButton } from "@clerk/nextjs";
 
 export interface BreadcrumbItem {
   label: string;
@@ -27,22 +28,6 @@ export function DashboardHeader({
   isSidebarCollapsed,
   onToggleSidebarCollapse,
 }: DashboardHeaderProps) {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
-
-  // Close profile dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsProfileOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   return (
     <header className="h-16 border-b border-[#1C182B] bg-[#07060E]/90 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 flex items-center justify-between gap-4">
@@ -126,47 +111,27 @@ export function DashboardHeader({
           )}
         </div>
 
-        {/* Student Avatar Menu */}
-        <div className="relative" ref={profileMenuRef}>
-          <button
-            type="button"
-            onClick={() => setIsProfileOpen((prev) => !prev)}
-            className="w-8 h-8 rounded-full bg-[#181329] border border-[#2B2342] hover:border-[#8B5CF6] text-xs font-semibold text-[#C084FC] flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8B5CF6]"
-            aria-expanded={isProfileOpen}
-            aria-label="Student profile menu"
-          >
-            EC
-          </button>
+        {/* Profile & Auth Menu */}
+        <div className="flex items-center">
+          <Show when="signed-in">
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox:
+                    "w-8 h-8 rounded-full border border-[#2B2342] hover:border-[#8B5CF6] transition-colors shadow-[0_0_12px_rgba(139,92,246,0.3)]",
+                },
+              }}
+            />
+          </Show>
 
-          {/* Profile Dropdown */}
-          {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-52 bg-[#0E0C1C] border border-[#231E35] rounded-xl shadow-xl py-2 z-50 text-xs">
-              <div className="px-3.5 py-2 border-b border-[#1C182B]">
-                <div className="font-semibold text-white">ECE Student</div>
-                <div className="text-[11px] text-[#94A3B8] mt-0.5">Core Electronics Track</div>
-              </div>
-
-              <div className="py-1">
-                <Link
-                  href="/choose-path"
-                  onClick={() => setIsProfileOpen(false)}
-                  className="flex items-center gap-2 px-3.5 py-2 text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors"
-                >
-                  <Compass size={14} className="text-[#8B5CF6]" />
-                  <span>Switch Learning Path</span>
-                </Link>
-
-                <Link
-                  href="/"
-                  onClick={() => setIsProfileOpen(false)}
-                  className="flex items-center gap-2 px-3.5 py-2 text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors"
-                >
-                  <LogOut size={14} className="text-[#64748B]" />
-                  <span>Exit to SkillNex Home</span>
-                </Link>
-              </div>
-            </div>
-          )}
+          <Show when="signed-out">
+            <Link
+              href="/sign-in"
+              className="h-8 px-3 rounded-lg bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-semibold inline-flex items-center justify-center transition-all shadow-[0_0_12px_rgba(139,92,246,0.4)]"
+            >
+              Sign In
+            </Link>
+          </Show>
         </div>
       </div>
     </header>

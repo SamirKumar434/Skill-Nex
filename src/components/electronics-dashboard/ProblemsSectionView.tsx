@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   Binary,
   Search,
@@ -10,18 +10,15 @@ import {
   ArrowLeft,
   Cpu,
   ExternalLink,
-  Layers,
 } from "lucide-react";
 import {
   PROBLEMS_DATA,
   PROBLEM_TOPICS,
-  ProblemItem,
   ProblemStatus,
   ProblemTopic,
   HDLBITS_INDEX_URL,
-  getProblemsStatusMap,
-  setProblemStatus,
 } from "@/data/problems-data";
+import { useStudentProgress } from "@/components/progress/ProgressContext";
 import { ProblemsTable } from "./ProblemsTable";
 
 interface ProblemsSectionViewProps {
@@ -29,20 +26,14 @@ interface ProblemsSectionViewProps {
 }
 
 export function ProblemsSectionView({ onBackToOverview }: ProblemsSectionViewProps) {
-  const [statusMap, setStatusMap] = useState<Record<string, ProblemStatus>>({});
+  const { problemStatusMap: statusMap, updateProblemStatus } = useStudentProgress();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTopic, setSelectedTopic] = useState<"all" | ProblemTopic>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | ProblemStatus>("all");
 
-  // Load persisted status on mount
-  useEffect(() => {
-    setStatusMap(getProblemsStatusMap());
-  }, []);
-
   const handleUpdateStatus = useCallback((problemId: string, status: ProblemStatus) => {
-    const updated = setProblemStatus(problemId, status);
-    setStatusMap(updated);
-  }, []);
+    updateProblemStatus(problemId, status);
+  }, [updateProblemStatus]);
 
   // Compute metrics from actual student status
   const totalProblems = PROBLEMS_DATA.length;

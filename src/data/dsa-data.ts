@@ -704,7 +704,7 @@ export const DSA_CATEGORIES: DsaCategory[] = [
   },
 ];
 
-// Local storage key for persistent DSA question completion tracking
+// Local storage key for persistent DSA question completion tracking (read-only for legacy data)
 export const STORAGE_COMPLETED_DSA_KEY = "skillnex_completed_dsa_questions";
 
 export function getCompletedDsaQuestionIds(): string[] {
@@ -717,21 +717,18 @@ export function getCompletedDsaQuestionIds(): string[] {
   }
 }
 
-export function setCompletedDsaQuestionIds(ids: string[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_COMPLETED_DSA_KEY, JSON.stringify(ids));
-  } catch {
-    // ignore
-  }
+/**
+ * Disabled for guest users per SkillNex login-only progress policy.
+ * Authenticated student progress is persisted in PostgreSQL.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function setCompletedDsaQuestionIds(_ids: string[]): void {
+  // No-op for guests: progress writing is restricted to authenticated users in PostgreSQL
 }
 
-export function toggleDsaQuestionCompletion(questionId: string): string[] {
-  const current = getCompletedDsaQuestionIds();
-  const exists = current.includes(questionId);
-  const updated = exists
-    ? current.filter((id) => id !== questionId)
-    : [...current, questionId];
-  setCompletedDsaQuestionIds(updated);
-  return updated;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function toggleDsaQuestionCompletion(_questionId: string): string[] {
+  // No-op for guests: returns current read-only snapshot without writing
+  return getCompletedDsaQuestionIds();
 }
+

@@ -15,11 +15,8 @@ import { PlaceholderNotice, PlaceholderType } from "./PlaceholderNotice";
 import { ProjectsSectionView } from "./ProjectsSectionView";
 import { DsaSectionView } from "./DsaSectionView";
 import { ProblemsSectionView } from "./ProblemsSectionView";
-import {
-  CORE_ELECTRONICS_STAGES,
-  getCompletedTopicIds,
-  toggleTopicCompletion,
-} from "@/data/electronics-roadmap";
+import { CORE_ELECTRONICS_STAGES } from "@/data/electronics-roadmap";
+import { useStudentProgress } from "@/components/progress/ProgressContext";
 
 interface ElectronicsDashboardProps {
   initialTab?: DashboardTab;
@@ -42,7 +39,7 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [completedTopicIds, setCompletedTopicIds] = useState<string[]>([]);
+  const { completedTopicIds, toggleTopic } = useStudentProgress();
 
   // Sync state with URL if params change
   useEffect(() => {
@@ -58,15 +55,9 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
     }
   }, [stageFromUrl, tabFromUrl]);
 
-  // Load persisted topic completions on mount
-  useEffect(() => {
-    setCompletedTopicIds(getCompletedTopicIds());
-  }, []);
-
   const handleToggleTopic = useCallback((topicId: string) => {
-    const updated = toggleTopicCompletion(topicId);
-    setCompletedTopicIds(updated);
-  }, []);
+    toggleTopic(topicId);
+  }, [toggleTopic]);
 
   // Update stage selection with URL sync and origin tab tracking
   const handleSelectStage = useCallback(

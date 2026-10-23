@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -18,10 +18,7 @@ import {
   Layers,
 } from "lucide-react";
 import { TopicDocumentation } from "@/data/docs/types";
-import {
-  getCompletedTopicIds,
-  toggleTopicCompletion,
-} from "@/data/electronics-roadmap";
+import { useStudentProgress } from "@/components/progress/ProgressContext";
 
 interface TopicDocumentationViewProps {
   doc: TopicDocumentation;
@@ -35,17 +32,12 @@ export function TopicDocumentationView({
   nextDoc,
 }: TopicDocumentationViewProps) {
   const [copiedCode, setCopiedCode] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [revealedAnswers, setRevealedAnswers] = useState<Record<number, boolean>>({});
-
-  useEffect(() => {
-    const completed = getCompletedTopicIds();
-    setIsCompleted(completed.includes(doc.id));
-  }, [doc.id]);
+  const { completedTopicIds, toggleTopic } = useStudentProgress();
+  const isCompleted = completedTopicIds.includes(doc.id);
 
   const handleToggleCompletion = () => {
-    const updated = toggleTopicCompletion(doc.id);
-    setIsCompleted(updated.includes(doc.id));
+    toggleTopic(doc.id);
   };
 
   const handleCopyCode = async (text?: string) => {
