@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { getOrCreateCurrentUser } from "@/lib/auth";
+import { getVerifiedUser } from "@/lib/auth";
 import {
   getStudentProgress,
   toggleTopicProgress,
@@ -17,17 +17,28 @@ export interface ActionResult<T> {
   error?: string;
 }
 
+const VALID_PROBLEM_STATUSES: readonly string[] = ["not-started", "in-progress", "completed"];
+const MAX_IDENTIFIER_LENGTH = 128;
+
 /**
  * Helper to authenticate and get the verified PostgreSQL user.
  * Rejects unauthorized callers without trusting client-supplied user IDs.
+ * Utilizes fast-path indexed DB lookup to eliminate redundant Clerk API round-trips.
  */
 async function getVerifiedDbUser() {
-  const { userId } = await auth();
+  let userId: string | null = null;
+  try {
+    const session = await auth();
+    userId = session?.userId ?? null;
+  } catch {
+    throw new Error("UNAUTHORIZED");
+  }
+
   if (!userId) {
     throw new Error("UNAUTHORIZED");
   }
 
-  const dbUser = await getOrCreateCurrentUser();
+  const dbUser = await getVerifiedUser();
   if (!dbUser) {
     throw new Error("USER_NOT_FOUND");
   }
@@ -48,58 +59,75 @@ export async function getStudentProgressAction(): Promise<ActionResult<StudentPr
     if (message === "UNAUTHORIZED") {
       return { success: false, error: "Unauthorized: Active login session required." };
     }
+    console.error("[SkillNex Actions] getStudentProgressAction error:", message);
     return { success: false, error: "Could not load student progress. Please try again." };
   }
 }
 
 /**
- * Server Action: Toggles a roadmap topic completion status
+ * Server Action: Updates a roadmap topic completion status
  */
 export async function toggleTopicProgressAction(
-  topicId: string
+  topicId: string,
+  forceCompleted?: boolean
 ): Promise<ActionResult<{ topicId: string; isCompleted: boolean }>> {
   try {
-    if (!topicId || typeof topicId !== "string") {
+    if (
+      !topicId ||
+      typeof topicId !== "string" ||
+      !topicId.trim() ||
+      topicId.length > MAX_IDENTIFIER_LENGTH
+    ) {
       return { success: false, error: "Invalid topic ID provided." };
     }
 
+    const cleanTopicId = topicId.trim();
     const dbUser = await getVerifiedDbUser();
-    const result = await toggleTopicProgress(dbUser.id, topicId);
+    const result = await toggleTopicProgress(dbUser.id, cleanTopicId, forceCompleted);
     return { success: true, data: result };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to toggle topic";
+    const message = error instanceof Error ? error.message : "Failed to update topic progress";
     if (message === "UNAUTHORIZED") {
       return { success: false, error: "Unauthorized: Please sign in to save your progress." };
     }
     if (message.startsWith("Invalid topic ID")) {
       return { success: false, error: message };
     }
+    console.error("[SkillNex Actions] toggleTopicProgressAction error:", message);
     return { success: false, error: "Unable to update topic progress. Please try again." };
   }
 }
 
 /**
- * Server Action: Toggles a DSA question completion status
+ * Server Action: Updates a DSA question completion status
  */
 export async function toggleDsaProgressAction(
-  questionId: string
+  questionId: string,
+  forceCompleted?: boolean
 ): Promise<ActionResult<{ questionId: string; isCompleted: boolean }>> {
   try {
-    if (!questionId || typeof questionId !== "string") {
+    if (
+      !questionId ||
+      typeof questionId !== "string" ||
+      !questionId.trim() ||
+      questionId.length > MAX_IDENTIFIER_LENGTH
+    ) {
       return { success: false, error: "Invalid question ID provided." };
     }
 
+    const cleanQuestionId = questionId.trim();
     const dbUser = await getVerifiedDbUser();
-    const result = await toggleDsaProgress(dbUser.id, questionId);
+    const result = await toggleDsaProgress(dbUser.id, cleanQuestionId, forceCompleted);
     return { success: true, data: result };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to toggle question";
+    const message = error instanceof Error ? error.message : "Failed to update question progress";
     if (message === "UNAUTHORIZED") {
       return { success: false, error: "Unauthorized: Please sign in to save your progress." };
     }
     if (message.startsWith("Invalid DSA question ID")) {
       return { success: false, error: message };
     }
+    console.error("[SkillNex Actions] toggleDsaProgressAction error:", message);
     return { success: false, error: "Unable to update question progress. Please try again." };
   }
 }
@@ -112,12 +140,26 @@ export async function updateProblemStatusAction(
   status: UiProblemStatus
 ): Promise<ActionResult<{ problemId: string; status: UiProblemStatus }>> {
   try {
-    if (!problemId || typeof problemId !== "string") {
+    if (
+      !problemId ||
+      typeof problemId !== "string" ||
+      !problemId.trim() ||
+      problemId.length > MAX_IDENTIFIER_LENGTH
+    ) {
       return { success: false, error: "Invalid problem ID provided." };
     }
 
+    if (
+      !status ||
+      typeof status !== "string" ||
+      !VALID_PROBLEM_STATUSES.includes(status)
+    ) {
+      return { success: false, error: "Invalid problem status provided." };
+    }
+
+    const cleanProblemId = problemId.trim();
     const dbUser = await getVerifiedDbUser();
-    const result = await updateProblemProgress(dbUser.id, problemId, status);
+    const result = await updateProblemProgress(dbUser.id, cleanProblemId, status);
     return { success: true, data: result };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to update problem status";
@@ -127,6 +169,8 @@ export async function updateProblemStatusAction(
     if (message.startsWith("Invalid")) {
       return { success: false, error: message };
     }
+    console.error("[SkillNex Actions] updateProblemStatusAction error:", message);
     return { success: false, error: "Unable to update problem status. Please try again." };
   }
 }
+

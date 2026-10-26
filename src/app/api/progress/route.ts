@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getOrCreateCurrentUser } from "@/lib/auth";
+import { getVerifiedUser } from "@/lib/auth";
 import { getStudentProgress } from "@/lib/progress";
 
 /**
@@ -19,7 +19,7 @@ export async function GET() {
       );
     }
 
-    const dbUser = await getOrCreateCurrentUser();
+    const dbUser = await getVerifiedUser();
     if (!dbUser) {
       return NextResponse.json(
         { error: "User record not found" },

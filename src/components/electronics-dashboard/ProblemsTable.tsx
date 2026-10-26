@@ -72,12 +72,12 @@ export function ProblemsTable({
         <table className="w-full min-w-[760px] text-left text-xs sm:text-sm">
           <thead>
             <tr className="border-b border-[#1C182B] bg-[#0E0C1C] text-[11px] font-bold uppercase tracking-wider text-[#94A3B8]">
-              <th className="py-3 px-3 sm:px-4 w-16 text-center">Serial</th>
+              <th className="py-3 px-3 sm:px-4 w-16 text-center whitespace-nowrap">Serial</th>
               <th className="py-3 px-3 sm:px-4 min-w-[280px]">Problem Name</th>
-              <th className="py-3 px-3 sm:px-4 w-44 text-center">Topic</th>
-              <th className="py-3 px-3 sm:px-4 w-28 text-center">Difficulty</th>
-              <th className="py-3 px-3 sm:px-4 w-36 text-center">Problem Link</th>
-              <th className="py-3 px-3 sm:px-4 w-36 text-center">Status</th>
+              <th className="py-3 px-3 sm:px-4 w-44 text-center whitespace-nowrap">Topic</th>
+              <th className="py-3 px-3 sm:px-4 w-28 text-center whitespace-nowrap">Difficulty</th>
+              <th className="py-3 px-3 sm:px-4 w-36 text-center whitespace-nowrap">Problem Link</th>
+              <th className="py-3 px-3 sm:px-4 w-36 text-center whitespace-nowrap">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#181427]">

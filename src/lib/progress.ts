@@ -89,41 +89,53 @@ export async function getStudentProgress(dbUserId: string): Promise<StudentProgr
 }
 
 /**
- * Toggles a roadmap topic completion status for the authenticated user
+ * Updates a roadmap topic completion status for the authenticated user.
+ * Supports toggle behavior (default) or deterministic marking (via forceCompleted).
  */
 export async function toggleTopicProgress(
   dbUserId: string,
-  topicId: string
+  topicId: string,
+  forceCompleted?: boolean
 ): Promise<{ topicId: string; isCompleted: boolean }> {
-  const topicMeta = TOPIC_INDEX.get(topicId);
-  if (!topicMeta) {
+  const cleanTopicId = typeof topicId === "string" ? topicId.trim() : "";
+  if (!cleanTopicId || cleanTopicId.length > 128) {
     throw new Error(`Invalid topic ID: "${topicId}"`);
+  }
+
+  const topicMeta = TOPIC_INDEX.get(cleanTopicId);
+  if (!topicMeta) {
+    throw new Error(`Invalid topic ID: "${cleanTopicId}"`);
   }
 
   const existing = await prisma.userTopicProgress.findUnique({
     where: {
       userId_topicId: {
         userId: dbUserId,
-        topicId,
+        topicId: cleanTopicId,
       },
     },
   });
 
-  const nextCompleted = existing ? !existing.isCompleted : true;
+  const nextCompleted =
+    typeof forceCompleted === "boolean"
+      ? forceCompleted
+      : existing
+      ? !existing.isCompleted
+      : true;
 
   await prisma.userTopicProgress.upsert({
     where: {
       userId_topicId: {
         userId: dbUserId,
-        topicId,
+        topicId: cleanTopicId,
       },
     },
     create: {
       userId: dbUserId,
-      topicId,
+      topicId: cleanTopicId,
       stageId: topicMeta.stageId,
-      isCompleted: true,
-      completedAt: new Date(),
+      isCompleted: nextCompleted,
+      completedAt: nextCompleted ? new Date() : new Date(0),
     },
     update: {
       isCompleted: nextCompleted,
@@ -131,45 +143,57 @@ export async function toggleTopicProgress(
     },
   });
 
-  return { topicId, isCompleted: nextCompleted };
+  return { topicId: cleanTopicId, isCompleted: nextCompleted };
 }
 
 /**
- * Toggles a DSA question completion status for the authenticated user
+ * Updates a DSA question completion status for the authenticated user.
+ * Supports toggle behavior (default) or deterministic marking (via forceCompleted).
  */
 export async function toggleDsaProgress(
   dbUserId: string,
-  questionId: string
+  questionId: string,
+  forceCompleted?: boolean
 ): Promise<{ questionId: string; isCompleted: boolean }> {
-  const questionMeta = DSA_QUESTION_INDEX.get(questionId);
-  if (!questionMeta) {
+  const cleanQuestionId = typeof questionId === "string" ? questionId.trim() : "";
+  if (!cleanQuestionId || cleanQuestionId.length > 128) {
     throw new Error(`Invalid DSA question ID: "${questionId}"`);
+  }
+
+  const questionMeta = DSA_QUESTION_INDEX.get(cleanQuestionId);
+  if (!questionMeta) {
+    throw new Error(`Invalid DSA question ID: "${cleanQuestionId}"`);
   }
 
   const existing = await prisma.userDsaProgress.findUnique({
     where: {
       userId_questionId: {
         userId: dbUserId,
-        questionId,
+        questionId: cleanQuestionId,
       },
     },
   });
 
-  const nextCompleted = existing ? !existing.isCompleted : true;
+  const nextCompleted =
+    typeof forceCompleted === "boolean"
+      ? forceCompleted
+      : existing
+      ? !existing.isCompleted
+      : true;
 
   await prisma.userDsaProgress.upsert({
     where: {
       userId_questionId: {
         userId: dbUserId,
-        questionId,
+        questionId: cleanQuestionId,
       },
     },
     create: {
       userId: dbUserId,
-      questionId,
+      questionId: cleanQuestionId,
       categoryId: questionMeta.categoryId,
-      isCompleted: true,
-      completedAt: new Date(),
+      isCompleted: nextCompleted,
+      completedAt: nextCompleted ? new Date() : new Date(0),
     },
     update: {
       isCompleted: nextCompleted,
@@ -177,7 +201,7 @@ export async function toggleDsaProgress(
     },
   });
 
-  return { questionId, isCompleted: nextCompleted };
+  return { questionId: cleanQuestionId, isCompleted: nextCompleted };
 }
 
 /**
@@ -188,7 +212,8 @@ export async function updateProblemProgress(
   problemId: string,
   status: UiProblemStatus
 ): Promise<{ problemId: string; status: UiProblemStatus }> {
-  if (!PROBLEM_ID_SET.has(problemId)) {
+  const cleanProblemId = typeof problemId === "string" ? problemId.trim() : "";
+  if (!cleanProblemId || cleanProblemId.length > 128 || !PROBLEM_ID_SET.has(cleanProblemId)) {
     throw new Error(`Invalid HDLBits problem ID: "${problemId}"`);
   }
 
@@ -203,12 +228,12 @@ export async function updateProblemProgress(
     where: {
       userId_problemId: {
         userId: dbUserId,
-        problemId,
+        problemId: cleanProblemId,
       },
     },
     create: {
       userId: dbUserId,
-      problemId,
+      problemId: cleanProblemId,
       status: dbStatus,
     },
     update: {
@@ -216,5 +241,6 @@ export async function updateProblemProgress(
     },
   });
 
-  return { problemId, status };
+  return { problemId: cleanProblemId, status };
 }
+

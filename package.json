@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint src",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:audit": "npx tsx scripts/regression-audit-test.ts",
+    "test:e2e": "npx tsx scripts/phase2-5-e2e-test.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.19",

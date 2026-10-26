@@ -29,6 +29,7 @@ interface ProgressContextValue {
   openSignInPrompt: () => void;
   closeSignInPrompt: () => void;
   refreshProgress: () => Promise<void>;
+  clearError: () => void;
 }
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
@@ -115,6 +116,10 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     setIsSignInModalOpen(false);
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   const toggleTopic = useCallback(
     async (topicId: string): Promise<boolean> => {
       if (!isSignedIn) {
@@ -135,14 +140,15 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         if (!res.success) {
           // Rollback on failure
           setCompletedTopicIds(completedTopicIds);
-          setError(res.error || "Failed to update topic status");
+          setError(res.error || "Couldn't save your progress. Please check your connection and try again.");
           return false;
         }
+        setError(null);
         return true;
       } catch {
         // Rollback on network exception
         setCompletedTopicIds(completedTopicIds);
-        setError("Network error updating topic status");
+        setError("Couldn't save your progress. Please check your connection and try again.");
         return false;
       }
     },
@@ -169,14 +175,15 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         if (!res.success) {
           // Rollback on failure
           setCompletedDsaQuestionIds(completedDsaQuestionIds);
-          setError(res.error || "Failed to update question status");
+          setError(res.error || "Couldn't save your progress. Please check your connection and try again.");
           return false;
         }
+        setError(null);
         return true;
       } catch {
         // Rollback on network exception
         setCompletedDsaQuestionIds(completedDsaQuestionIds);
-        setError("Network error updating question status");
+        setError("Couldn't save your progress. Please check your connection and try again.");
         return false;
       }
     },
@@ -199,14 +206,15 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         if (!res.success) {
           // Rollback on failure
           setProblemStatusMap((prev) => ({ ...prev, [problemId]: prevStatus }));
-          setError(res.error || "Failed to update problem status");
+          setError(res.error || "Couldn't save your progress. Please check your connection and try again.");
           return false;
         }
+        setError(null);
         return true;
       } catch {
         // Rollback on network exception
         setProblemStatusMap((prev) => ({ ...prev, [problemId]: prevStatus }));
-        setError("Network error updating problem status");
+        setError("Couldn't save your progress. Please check your connection and try again.");
         return false;
       }
     },
@@ -227,6 +235,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         openSignInPrompt,
         closeSignInPrompt,
         refreshProgress: fetchProgress,
+        clearError,
       }}
     >
       {children}

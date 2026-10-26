@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertCircle, X } from "lucide-react";
 import { DashboardSidebar, DashboardTab } from "./DashboardSidebar";
 import { DashboardHeader, BreadcrumbItem } from "./DashboardHeader";
 import { OverviewSubjectsView } from "./OverviewSubjectsView";
@@ -39,7 +39,16 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const { completedTopicIds, toggleTopic } = useStudentProgress();
+  const { completedTopicIds, toggleTopic, error, clearError } = useStudentProgress();
+
+  // Auto-dismiss progress update error after 5 seconds to prevent stale messages
+  useEffect(() => {
+    if (!error) return;
+    const timer = setTimeout(() => {
+      clearError();
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [error, clearError]);
 
   // Sync state with URL if params change
   useEffect(() => {
@@ -337,6 +346,30 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
           )}
         </main>
       </div>
+
+      {/* Non-intrusive progress failure toast notification */}
+      {error && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 max-w-md bg-[#130F23] border border-red-500/30 text-white rounded-xl p-3.5 sm:p-4 shadow-[0_10px_30px_rgba(0,0,0,0.6)] flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <AlertCircle size={17} className="text-red-400 shrink-0" />
+            <p className="text-xs sm:text-sm text-[#F1F5F9] leading-snug truncate sm:whitespace-normal">
+              {error}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={clearError}
+            aria-label="Dismiss error"
+            className="p-1 text-[#94A3B8] hover:text-white rounded-lg hover:bg-white/10 transition-colors shrink-0"
+          >
+            <X size={15} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

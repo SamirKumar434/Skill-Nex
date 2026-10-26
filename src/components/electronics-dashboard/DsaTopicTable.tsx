@@ -32,11 +32,11 @@ function DifficultyGroupTable({
         <table className="w-full min-w-[680px] text-left text-xs sm:text-sm">
           <thead>
             <tr className="border-b border-[#1C182B] bg-[#0E0C1C] text-[11px] font-bold uppercase tracking-wider text-[#94A3B8]">
-              <th className="py-3 px-3 sm:px-4 w-16 text-center">S. No.</th>
+              <th className="py-3 px-3 sm:px-4 w-16 text-center whitespace-nowrap">S. No.</th>
               <th className="py-3 px-3 sm:px-4 min-w-[260px]">Problem</th>
-              <th className="py-3 px-3 sm:px-4 w-32 text-center">Video Lecture</th>
-              <th className="py-3 px-3 sm:px-4 w-36 text-center">Practice / Reference</th>
-              <th className="py-3 px-3 sm:px-4 w-28 text-center">Status</th>
+              <th className="py-3 px-3 sm:px-4 w-32 text-center whitespace-nowrap">Video Lecture</th>
+              <th className="py-3 px-3 sm:px-4 w-36 text-center whitespace-nowrap">Practice / Reference</th>
+              <th className="py-3 px-3 sm:px-4 w-28 text-center whitespace-nowrap">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#181427]">

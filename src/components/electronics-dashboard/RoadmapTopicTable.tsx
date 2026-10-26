@@ -159,11 +159,11 @@ export function RoadmapTopicTable({
           <table className="w-full min-w-[680px] text-left text-xs sm:text-sm">
             <thead>
               <tr className="border-b border-[#1C182B] bg-[#0E0C1C] text-[11px] font-bold uppercase tracking-wider text-[#94A3B8]">
-                <th className="py-3 px-3 sm:px-4 w-14 sm:w-20 text-center">Serial Number</th>
+                <th className="py-3 px-3 sm:px-4 w-16 sm:w-24 text-center whitespace-nowrap">Serial Number</th>
                 <th className="py-3 px-3 sm:px-4 min-w-[260px]">Topic / Question</th>
-                <th className="py-3 px-3 sm:px-4 w-32 sm:w-36 text-center">Video Lecture</th>
-                <th className="py-3 px-3 sm:px-4 w-36 text-center">Practice / Reference</th>
-                <th className="py-3 px-3 sm:px-4 w-28 text-center">Status</th>
+                <th className="py-3 px-3 sm:px-4 w-32 sm:w-36 text-center whitespace-nowrap">Video Lecture</th>
+                <th className="py-3 px-3 sm:px-4 w-36 sm:w-40 text-center whitespace-nowrap">Practice / Reference</th>
+                <th className="py-3 px-3 sm:px-4 w-28 text-center whitespace-nowrap">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#181427]">

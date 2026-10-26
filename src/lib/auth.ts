@@ -16,8 +16,12 @@ import type { User as DbUser } from "@prisma/client";
  * Returns null if the request is unauthenticated.
  */
 export async function getAuthUserId(): Promise<string | null> {
-  const { userId } = await auth();
-  return userId ?? null;
+  try {
+    const { userId } = await auth();
+    return userId ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -26,7 +30,14 @@ export async function getAuthUserId(): Promise<string | null> {
  * Safe to call repeatedly on any request (idempotent upsert).
  */
 export async function getOrCreateCurrentUser(): Promise<DbUser | null> {
-  const { userId } = await auth();
+  let userId: string | null = null;
+  try {
+    const session = await auth();
+    userId = session?.userId ?? null;
+  } catch {
+    return null;
+  }
+
   if (!userId) {
     return null;
   }
@@ -101,11 +112,43 @@ export async function getOrCreateCurrentUser(): Promise<DbUser | null> {
 }
 
 /**
+ * Fast-path user verification for high-frequency operations (e.g. progress tracking).
+ * Verifies the Clerk session token server-side via `auth()`, looks up the user record
+ * directly in PostgreSQL by indexed `clerkId`, and only falls back to Clerk's
+ * remote profile API if the user record does not exist in PostgreSQL yet.
+ */
+export async function getVerifiedUser(): Promise<DbUser | null> {
+  let userId: string | null = null;
+  try {
+    const session = await auth();
+    userId = session?.userId ?? null;
+  } catch {
+    return null;
+  }
+
+  if (!userId) {
+    return null;
+  }
+
+  // Fast-path: query indexed DB record without remote Clerk API round-trip
+  const existingUser = await prisma.user.findUnique({
+    where: { clerkId: userId },
+  });
+
+  if (existingUser) {
+    return existingUser;
+  }
+
+  // First-time sync fallback
+  return getOrCreateCurrentUser();
+}
+
+/**
  * Requires that the request is authenticated.
  * Returns the verified PostgreSQL user or throws an Error.
  */
 export async function requireAuthUser(): Promise<DbUser> {
-  const user = await getOrCreateCurrentUser();
+  const user = await getVerifiedUser();
   if (!user) {
     throw new Error("Unauthorized: You must be signed in to perform this operation.");
   }
