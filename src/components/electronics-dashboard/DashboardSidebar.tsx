@@ -67,7 +67,7 @@ export function DashboardSidebar({
 
   const bottomItems: NavItem[] = [
     { id: "settings", label: "Settings", icon: Settings, isPlaceholder: true },
-    { id: "profile", label: "Profile", icon: User, isPlaceholder: true },
+    { id: "profile", label: "Profile", icon: User, isPlaceholder: false },
   ];
 
   const renderNavGroup = (title: string, items: NavItem[]) => (

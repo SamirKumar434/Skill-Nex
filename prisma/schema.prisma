@@ -28,8 +28,27 @@ model User {
   topicProgress   UserTopicProgress[]
   dsaProgress     UserDsaProgress[]
   problemProgress UserProblemProgress[]
+  activities      UserActivity[]
 
   @@index([clerkId])
+}
+
+// -------------------------------------------------------------
+// 5. Daily User Activity & Streak Tracking
+// -------------------------------------------------------------
+model UserActivity {
+  id            String   @id @default(cuid())
+  userId        String
+  activityDate  String   // Formatted calendar date: "YYYY-MM-DD" in UTC
+  activityCount Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Enforce one activity record per user per calendar day
+  @@unique([userId, activityDate])
+  @@index([userId, activityDate])
 }
 
 // -------------------------------------------------------------

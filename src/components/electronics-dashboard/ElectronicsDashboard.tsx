@@ -15,6 +15,7 @@ import { PlaceholderNotice, PlaceholderType } from "./PlaceholderNotice";
 import { ProjectsSectionView } from "./ProjectsSectionView";
 import { DsaSectionView } from "./DsaSectionView";
 import { ProblemsSectionView } from "./ProblemsSectionView";
+import { ProfileSectionView } from "./ProfileSectionView";
 import { CORE_ELECTRONICS_STAGES } from "@/data/electronics-roadmap";
 import { useStudentProgress } from "@/components/progress/ProgressContext";
 
@@ -337,8 +338,13 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
             <DsaSectionView
               onBackToOverview={() => handleSelectTab("overview")}
             />
+          ) : activeTab === "profile" ? (
+            /* F. Profile & LeetCode-Style Activity Heatmap */
+            <ProfileSectionView
+              onBackToOverview={() => handleSelectTab("overview")}
+            />
           ) : (
-            /* F. Placeholder Pages for upcoming features */
+            /* G. Placeholder Pages for upcoming features */
             <PlaceholderNotice
               type={activeTab as PlaceholderType}
               onBackToOverview={() => handleSelectTab("overview")}

@@ -4,6 +4,7 @@ import type { ProblemStatus as UiProblemStatus } from "@/data/problems-data";
 import { CORE_ELECTRONICS_STAGES } from "@/data/electronics-roadmap";
 import { DSA_CATEGORIES } from "@/data/dsa-data";
 import { PROBLEMS_DATA } from "@/data/problems-data";
+import { recordDailyActivity } from "@/lib/activity";
 
 /**
  * Progress Status Mappings between UI (lowercase hyphenated) and Database (uppercase enum)
@@ -143,6 +144,11 @@ export async function toggleTopicProgress(
     },
   });
 
+  // Record daily activity only on genuine transition from incomplete to complete
+  if (nextCompleted && (!existing || !existing.isCompleted)) {
+    await recordDailyActivity(dbUserId);
+  }
+
   return { topicId: cleanTopicId, isCompleted: nextCompleted };
 }
 
@@ -201,6 +207,11 @@ export async function toggleDsaProgress(
     },
   });
 
+  // Record daily activity only on genuine transition from incomplete to complete
+  if (nextCompleted && (!existing || !existing.isCompleted)) {
+    await recordDailyActivity(dbUserId);
+  }
+
   return { questionId: cleanQuestionId, isCompleted: nextCompleted };
 }
 
@@ -224,6 +235,17 @@ export async function updateProblemProgress(
 
   const dbStatus = toDbProblemStatus(status);
 
+  // Check existing status to prevent duplicate activity records on idempotent updates
+  const existing = await prisma.userProblemProgress.findUnique({
+    where: {
+      userId_problemId: {
+        userId: dbUserId,
+        problemId: cleanProblemId,
+      },
+    },
+    select: { status: true },
+  });
+
   await prisma.userProblemProgress.upsert({
     where: {
       userId_problemId: {
@@ -240,6 +262,14 @@ export async function updateProblemProgress(
       status: dbStatus,
     },
   });
+
+  // Record daily activity only when transitioning to COMPLETED from a non-completed state
+  if (
+    dbStatus === DbProblemStatus.COMPLETED &&
+    (!existing || existing.status !== DbProblemStatus.COMPLETED)
+  ) {
+    await recordDailyActivity(dbUserId);
+  }
 
   return { problemId: cleanProblemId, status };
 }

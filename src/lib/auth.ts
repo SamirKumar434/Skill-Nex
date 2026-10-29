@@ -67,8 +67,7 @@ export async function getOrCreateCurrentUser(): Promise<DbUser | null> {
       null
     : null;
 
-  const avatarUrl = clerkUser?.imageUrl || null;
-
+    // Note: Avatar URLs are not stored in PostgreSQL; Clerk is the single source of truth.
   try {
     // Idempotent upsert keyed by unique Clerk user ID
     const dbUser = await prisma.user.upsert({
@@ -76,13 +75,11 @@ export async function getOrCreateCurrentUser(): Promise<DbUser | null> {
       update: {
         ...(hasVerifiedEmail ? { email: primaryEmail } : {}),
         ...(fullName ? { fullName } : {}),
-        ...(avatarUrl ? { avatarUrl } : {}),
       },
       create: {
         clerkId: userId,
         email: primaryEmail,
         fullName,
-        avatarUrl,
         selectedTrack: "core-electronics",
       },
     });
@@ -99,7 +96,6 @@ export async function getOrCreateCurrentUser(): Promise<DbUser | null> {
         data: {
           clerkId: userId,
           ...(fullName ? { fullName } : {}),
-          ...(avatarUrl ? { avatarUrl } : {}),
         },
       });
       return updatedUser;

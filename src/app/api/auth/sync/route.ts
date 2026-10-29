@@ -25,7 +25,7 @@ export async function GET() {
         clerkId: user.clerkId,
         email: user.email,
         fullName: user.fullName,
-        avatarUrl: user.avatarUrl,
+        avatarUrl: null,
         selectedTrack: user.selectedTrack,
         createdAt: user.createdAt,
       },
