@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  ShieldCheck,
 } from "lucide-react";
 
 export type DashboardTab =
@@ -37,6 +38,7 @@ interface DashboardSidebarProps {
   onCloseMobile: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  isAdmin?: boolean;
 }
 
 interface NavItem {
@@ -53,6 +55,7 @@ export function DashboardSidebar({
   onCloseMobile,
   isCollapsed,
   onToggleCollapse,
+  isAdmin = false,
 }: DashboardSidebarProps) {
   const learnItems: NavItem[] = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -185,6 +188,35 @@ export function DashboardSidebar({
           {renderNavGroup("LEARN", learnItems)}
           {renderNavGroup("CAREER", careerItems)}
           {renderNavGroup("ACCOUNT", bottomItems)}
+
+          {isAdmin && (
+            <div className="space-y-1 pt-2 border-t border-[#1C182B]">
+              {!isCollapsed && (
+                <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                  <ShieldCheck size={12} className="text-amber-400" />
+                  <span>ADMINISTRATOR</span>
+                </div>
+              )}
+              <Link
+                href="/admin"
+                title="Open Admin Monitoring Console"
+                onClick={onCloseMobile}
+                className={`w-full flex items-center ${
+                  isCollapsed ? "justify-center px-2 py-2.5" : "justify-between px-3 py-2"
+                } rounded-lg text-xs sm:text-sm font-medium transition-all text-amber-300 hover:text-white bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <ShieldCheck size={17} className="shrink-0 text-amber-400" />
+                  {!isCollapsed && <span className="truncate font-semibold">Admin Console</span>}
+                </div>
+                {!isCollapsed && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/20 px-1.5 py-0.5 rounded shrink-0">
+                    Portal
+                  </span>
+                )}
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Bottom Back Link */}

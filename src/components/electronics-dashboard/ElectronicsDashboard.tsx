@@ -245,6 +245,7 @@ export function ElectronicsDashboard({
         isOpenMobile={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
         isCollapsed={isSidebarCollapsed}
+        isAdmin={isAdmin}
         onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
       />
 
@@ -253,6 +254,7 @@ export function ElectronicsDashboard({
         {/* Compact Top Bar */}
         <DashboardHeader
           breadcrumbs={breadcrumbItems}
+          isAdmin={isAdmin}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}

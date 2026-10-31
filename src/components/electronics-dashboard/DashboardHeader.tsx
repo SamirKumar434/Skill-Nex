@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Search, Menu, X, ChevronRight, PanelLeft } from "lucide-react";
+import { Search, Menu, X, ChevronRight, PanelLeft, ShieldCheck } from "lucide-react";
 import { Show, UserButton } from "@clerk/nextjs";
 
 export interface BreadcrumbItem {
@@ -18,6 +18,7 @@ interface DashboardHeaderProps {
   onOpenMobileMenu: () => void;
   isSidebarCollapsed: boolean;
   onToggleSidebarCollapse: () => void;
+  isAdmin?: boolean;
 }
 
 export function DashboardHeader({
@@ -27,6 +28,7 @@ export function DashboardHeader({
   onOpenMobileMenu,
   isSidebarCollapsed,
   onToggleSidebarCollapse,
+  isAdmin = false,
 }: DashboardHeaderProps) {
 
   return (
@@ -113,6 +115,17 @@ export function DashboardHeader({
 
         {/* Profile & Auth Menu */}
         <div className="flex items-center">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="mr-3 hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+              title="Open Admin Monitoring Console"
+            >
+              <ShieldCheck size={14} />
+              <span>Admin Console</span>
+            </Link>
+          )}
+
           <Show when="signed-in">
             <UserButton
               appearance={{
