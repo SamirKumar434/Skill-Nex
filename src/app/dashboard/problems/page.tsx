@@ -1,12 +1,15 @@
-"use client";
-
 import React, { Suspense } from "react";
+import { getVerifiedUserRole } from "@/lib/auth/require-admin";
+import { getRoadmapStages } from "@/data/electronics-roadmap";
 import { ElectronicsDashboard } from "@/components/electronics-dashboard/ElectronicsDashboard";
 
-export default function ProblemsDashboardPage() {
+export default async function ProblemsDashboardPage() {
+  const { isAdmin } = await getVerifiedUserRole();
+  const stages = getRoadmapStages(isAdmin);
+
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#07060D]" />}>
-      <ElectronicsDashboard initialTab="problems" />
+      <ElectronicsDashboard initialTab="problems" stages={stages} isAdmin={isAdmin} />
     </Suspense>
   );
 }

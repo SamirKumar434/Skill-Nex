@@ -16,14 +16,24 @@ import { ProjectsSectionView } from "./ProjectsSectionView";
 import { DsaSectionView } from "./DsaSectionView";
 import { ProblemsSectionView } from "./ProblemsSectionView";
 import { ProfileSectionView } from "./ProfileSectionView";
-import { CORE_ELECTRONICS_STAGES } from "@/data/electronics-roadmap";
+import {
+  CORE_ELECTRONICS_STAGES,
+  LearningStage,
+  isStageAdminOnly,
+} from "@/data/electronics-roadmap";
 import { useStudentProgress } from "@/components/progress/ProgressContext";
 
 interface ElectronicsDashboardProps {
   initialTab?: DashboardTab;
+  stages?: LearningStage[];
+  isAdmin?: boolean;
 }
 
-export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDashboardProps) {
+export function ElectronicsDashboard({
+  initialTab = "overview",
+  stages = CORE_ELECTRONICS_STAGES,
+  isAdmin = false,
+}: ElectronicsDashboardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -72,6 +82,11 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
   // Update stage selection with URL sync and origin tab tracking
   const handleSelectStage = useCallback(
     (stageId: string | null) => {
+      // Prevent selecting admin-only stage if caller is not an admin
+      if (stageId && isStageAdminOnly(stageId) && !isAdmin) {
+        return;
+      }
+
       if (stageId) {
         setReturnTab(activeTab);
         setActiveStageId(stageId);
@@ -95,7 +110,7 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
       const query = params.toString();
       router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
     },
-    [activeTab, returnTab, pathname, router, searchParams]
+    [activeTab, returnTab, pathname, router, searchParams, isAdmin]
   );
 
   // Update tab selection with URL sync
@@ -120,22 +135,22 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
 
   // Set of all valid topic IDs currently in the curriculum
   const allValidTopicIds = useMemo(() => {
-    return new Set(CORE_ELECTRONICS_STAGES.flatMap((stage) => stage.topics.map((t) => t.id)));
-  }, []);
+    return new Set(stages.flatMap((stage) => stage.topics.map((t) => t.id)));
+  }, [stages]);
 
   // Filter completedTopicIds to only count existing, valid topics (prevents duplicate counting)
   const validCompletedTopicCount = useMemo(() => {
     return completedTopicIds.filter((id) => allValidTopicIds.has(id)).length;
   }, [completedTopicIds, allValidTopicIds]);
 
-  // Total topics count across all 4 stages
+  // Total topics count across all active stages
   const totalTopicsCount = useMemo(() => {
-    return CORE_ELECTRONICS_STAGES.reduce((acc, stage) => acc + stage.topics.length, 0);
-  }, []);
+    return stages.reduce((acc, stage) => acc + stage.topics.length, 0);
+  }, [stages]);
 
   // Determine current active learning stage (first stage with unfinished topics)
   const currentStage = useMemo(() => {
-    for (const stage of CORE_ELECTRONICS_STAGES) {
+    for (const stage of stages) {
       const isStageComplete =
         stage.topics.length > 0 &&
         stage.topics.every((t) => completedTopicIds.includes(t.id));
@@ -143,8 +158,8 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
         return stage;
       }
     }
-    return CORE_ELECTRONICS_STAGES[CORE_ELECTRONICS_STAGES.length - 1];
-  }, [completedTopicIds]);
+    return stages[stages.length - 1] || stages[0];
+  }, [completedTopicIds, stages]);
 
   // Overall roadmap progress percentage (starts at 0% for new student)
   const overallProgressPercentage = useMemo(() => {
@@ -154,21 +169,21 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
 
   // Filter stages based on search query
   const filteredStages = useMemo(() => {
-    if (!searchQuery.trim()) return CORE_ELECTRONICS_STAGES;
+    if (!searchQuery.trim()) return stages;
     const q = searchQuery.toLowerCase();
-    return CORE_ELECTRONICS_STAGES.filter(
+    return stages.filter(
       (stage) =>
         stage.title.toLowerCase().includes(q) ||
         stage.target.toLowerCase().includes(q) ||
         stage.topics.some((topic) => topic.title.toLowerCase().includes(q))
     );
-  }, [searchQuery]);
+  }, [searchQuery, stages]);
 
   // Find currently opened stage for the table view
   const currentOpenStage = useMemo(() => {
     if (!activeStageId) return null;
-    return CORE_ELECTRONICS_STAGES.find((s) => s.id === activeStageId) || null;
-  }, [activeStageId]);
+    return stages.find((s) => s.id === activeStageId) || null;
+  }, [activeStageId, stages]);
 
   // Build breadcrumb items based on current view
   const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
@@ -248,7 +263,7 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
         {/* Content Body */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl w-full mx-auto">
           {/* A. Detailed Stage View: OverviewTopicTable for Overview, RoadmapTopicTable for Roadmap */}
-          {currentOpenStage ? (
+          {currentOpenStage && (!isStageAdminOnly(currentOpenStage.id) || isAdmin) ? (
             returnTab === "overview" ? (
               <OverviewTopicTable
                 stage={currentOpenStage}
@@ -264,29 +279,35 @@ export function ElectronicsDashboard({ initialTab = "overview" }: ElectronicsDas
               />
             )
           ) : activeTab === "overview" ? (
-            /* B. Overview: Exactly 4 Subject Cards (TakeUForward Prep Hub inspired) */
+            /* B. Overview: Subject Cards (4 for students/guests, 5 for admin) */
             <OverviewSubjectsView
               completedTopicIds={completedTopicIds}
               onSelectSubject={(stageId) => handleSelectStage(stageId)}
               onOpenRoadmap={() => handleSelectTab("roadmap")}
+              isAdmin={isAdmin}
             />
           ) : activeTab === "roadmap" ? (
-            /* C. My Roadmap: Full Core Electronics Roadmap (3 Summary Cards + 4 Stage Cards + Continue Learning) */
+            /* C. My Roadmap: Full Core Electronics Roadmap (3 Summary Cards + Stage Cards + Continue Learning) */
             <>
               {/* Roadmap Header */}
               <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-mono text-xs font-bold text-[#8B5CF6] px-2 py-0.5 rounded bg-[#8B5CF6]/10 border border-[#8B5CF6]/20">
                       ECE Track
                     </span>
                     <span className="text-xs text-[#94A3B8]">Core Electronics Path</span>
+                    {isAdmin && (
+                      <span className="font-mono text-xs font-bold text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                        Admin Preview: Verilog HDL Enabled
+                      </span>
+                    )}
                   </div>
                   <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                     Core Electronics Roadmap
                   </h1>
                   <p className="text-xs sm:text-sm text-[#94A3B8] mt-1">
-                    Master programming fundamentals, engineering tools, and circuit analysis across 4 structured stages.
+                    Master programming fundamentals, engineering tools, and circuit analysis across {stages.length} structured stages.
                   </p>
                 </div>
 

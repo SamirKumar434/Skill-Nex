@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { getVerifiedUser } from "@/lib/auth";
+import { getVerifiedUserRole, requireAdmin } from "@/lib/auth/require-admin";
 import {
   getStudentProgress,
   toggleTopicProgress,
@@ -9,6 +10,11 @@ import {
   updateProblemProgress,
   type StudentProgressData,
 } from "@/lib/progress";
+import {
+  VERILOG_HDL_STAGE,
+  isTopicAdminOnly,
+  type LearningStage,
+} from "@/data/electronics-roadmap";
 import type { ProblemStatus as UiProblemStatus } from "@/data/problems-data";
 
 export interface ActionResult<T> {
@@ -47,12 +53,14 @@ async function getVerifiedDbUser() {
 }
 
 /**
- * Server Action: Fetches all progress data for the currently authenticated student
+ * Server Action: Fetches all progress data for the currently authenticated student.
+ * If user is not an admin, Verilog HDL progress records are hidden from the payload.
  */
 export async function getStudentProgressAction(): Promise<ActionResult<StudentProgressData>> {
   try {
     const dbUser = await getVerifiedDbUser();
-    const progress = await getStudentProgress(dbUser.id);
+    const { isAdmin } = await getVerifiedUserRole();
+    const progress = await getStudentProgress(dbUser.id, isAdmin);
     return { success: true, data: progress };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to load progress";
@@ -65,7 +73,8 @@ export async function getStudentProgressAction(): Promise<ActionResult<StudentPr
 }
 
 /**
- * Server Action: Updates a roadmap topic completion status
+ * Server Action: Updates a roadmap topic completion status.
+ * Strictly verifies admin role if the topic is admin-only (Verilog HDL).
  */
 export async function toggleTopicProgressAction(
   topicId: string,
@@ -83,18 +92,47 @@ export async function toggleTopicProgressAction(
 
     const cleanTopicId = topicId.trim();
     const dbUser = await getVerifiedDbUser();
-    const result = await toggleTopicProgress(dbUser.id, cleanTopicId, forceCompleted);
+
+    // Enforce admin privileges if topic is admin-only
+    let isAdmin = false;
+    if (isTopicAdminOnly(cleanTopicId)) {
+      try {
+        await requireAdmin();
+        isAdmin = true;
+      } catch {
+        return {
+          success: false,
+          error: "Unauthorized: Admin privileges required to update Verilog HDL progress.",
+        };
+      }
+    }
+
+    const result = await toggleTopicProgress(dbUser.id, cleanTopicId, forceCompleted, isAdmin);
     return { success: true, data: result };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to update topic progress";
     if (message === "UNAUTHORIZED") {
       return { success: false, error: "Unauthorized: Please sign in to save your progress." };
     }
-    if (message.startsWith("Invalid topic ID")) {
+    if (message.startsWith("Invalid topic ID") || message.startsWith("Unauthorized")) {
       return { success: false, error: message };
     }
     console.error("[SkillNex Actions] toggleTopicProgressAction error:", message);
     return { success: false, error: "Unable to update topic progress. Please try again." };
+  }
+}
+
+/**
+ * Server Action: Fetches the admin-only Verilog HDL curriculum.
+ * Students and guests calling this are rejected with an authorization error.
+ */
+export async function getVerilogCurriculumAction(): Promise<ActionResult<LearningStage>> {
+  try {
+    await requireAdmin();
+    return { success: true, data: VERILOG_HDL_STAGE };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unauthorized";
+    return { success: false, error: message };
   }
 }
 

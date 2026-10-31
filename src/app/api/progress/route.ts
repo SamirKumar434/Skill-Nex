@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getVerifiedUser } from "@/lib/auth";
 import { getStudentProgress } from "@/lib/progress";
+import { getVerifiedUserRole } from "@/lib/auth/require-admin";
 
 /**
  * GET /api/progress
  *
  * Returns the current authenticated student's full progress.
  * If unauthenticated, returns 401 Unauthorized.
+ * Verilog HDL topic progress is filtered out if caller is not an admin.
  */
 export async function GET() {
   try {
@@ -27,7 +29,8 @@ export async function GET() {
       );
     }
 
-    const progress = await getStudentProgress(dbUser.id);
+    const { isAdmin } = await getVerifiedUserRole();
+    const progress = await getStudentProgress(dbUser.id, isAdmin);
     return NextResponse.json({
       success: true,
       data: progress,

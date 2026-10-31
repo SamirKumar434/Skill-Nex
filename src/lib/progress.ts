@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { ProblemStatus as DbProblemStatus } from "@prisma/client";
 import type { ProblemStatus as UiProblemStatus } from "@/data/problems-data";
-import { CORE_ELECTRONICS_STAGES } from "@/data/electronics-roadmap";
+import {
+  CORE_ELECTRONICS_STAGES,
+  VERILOG_HDL_STAGE,
+  isTopicAdminOnly,
+} from "@/data/electronics-roadmap";
 import { DSA_CATEGORIES } from "@/data/dsa-data";
 import { PROBLEMS_DATA } from "@/data/problems-data";
 import { recordDailyActivity } from "@/lib/activity";
@@ -42,6 +46,9 @@ for (const stage of CORE_ELECTRONICS_STAGES) {
     TOPIC_INDEX.set(topic.id, { stageId: topic.stageId || stage.id });
   }
 }
+for (const topic of VERILOG_HDL_STAGE.topics) {
+  TOPIC_INDEX.set(topic.id, { stageId: topic.stageId || "verilog-hdl" });
+}
 
 const DSA_QUESTION_INDEX = new Map<string, { categoryId: string }>();
 for (const cat of DSA_CATEGORIES) {
@@ -59,9 +66,13 @@ export interface StudentProgressData {
 }
 
 /**
- * Fetches all progress for an authenticated user from PostgreSQL
+ * Fetches all progress for an authenticated user from PostgreSQL.
+ * If isAdmin is false, admin-only topics (Verilog HDL) are stripped from the returned list.
  */
-export async function getStudentProgress(dbUserId: string): Promise<StudentProgressData> {
+export async function getStudentProgress(
+  dbUserId: string,
+  isAdmin: boolean = false
+): Promise<StudentProgressData> {
   const [topicRecords, dsaRecords, problemRecords] = await Promise.all([
     prisma.userTopicProgress.findMany({
       where: { userId: dbUserId, isCompleted: true },
@@ -82,8 +93,13 @@ export async function getStudentProgress(dbUserId: string): Promise<StudentProgr
     problemStatusMap[rec.problemId] = toUiProblemStatus(rec.status);
   }
 
+  // Filter out admin-only topics if caller is not an admin
+  const visibleTopicRecords = isAdmin
+    ? topicRecords
+    : topicRecords.filter((t) => !isTopicAdminOnly(t.topicId));
+
   return {
-    completedTopicIds: topicRecords.map((t) => t.topicId),
+    completedTopicIds: visibleTopicRecords.map((t) => t.topicId),
     completedDsaQuestionIds: dsaRecords.map((d) => d.questionId),
     problemStatusMap,
   };
@@ -92,15 +108,22 @@ export async function getStudentProgress(dbUserId: string): Promise<StudentProgr
 /**
  * Updates a roadmap topic completion status for the authenticated user.
  * Supports toggle behavior (default) or deterministic marking (via forceCompleted).
+ * Enforces admin authorization if topicId is restricted to administrators.
  */
 export async function toggleTopicProgress(
   dbUserId: string,
   topicId: string,
-  forceCompleted?: boolean
+  forceCompleted?: boolean,
+  isAdmin: boolean = false
 ): Promise<{ topicId: string; isCompleted: boolean }> {
   const cleanTopicId = typeof topicId === "string" ? topicId.trim() : "";
   if (!cleanTopicId || cleanTopicId.length > 128) {
     throw new Error(`Invalid topic ID: "${topicId}"`);
+  }
+
+  // Enforce server-side authorization for admin-only topics
+  if (isTopicAdminOnly(cleanTopicId) && !isAdmin) {
+    throw new Error(`Unauthorized: Topic "${cleanTopicId}" is restricted to administrators.`);
   }
 
   const topicMeta = TOPIC_INDEX.get(cleanTopicId);

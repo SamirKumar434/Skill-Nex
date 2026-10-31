@@ -3,6 +3,7 @@ import { C_PROGRAMMING_DOCS } from "./c-programming";
 import { GIT_GITHUB_DOCS } from "./git-github";
 import { ANALOG_ELECTRONICS_DOCS } from "./analog-electronics";
 import { DIGITAL_ELECTRONICS_DOCS } from "./digital-electronics";
+import { VERILOG_HDL_DOCS } from "./verilog-hdl";
 
 export * from "./types";
 
@@ -11,6 +12,7 @@ export const ALL_TOPIC_DOCS: TopicDocumentation[] = [
   ...GIT_GITHUB_DOCS,
   ...ANALOG_ELECTRONICS_DOCS,
   ...DIGITAL_ELECTRONICS_DOCS,
+  ...VERILOG_HDL_DOCS,
 ];
 
 // Map by topic ID for O(1) lookup

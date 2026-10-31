@@ -19,6 +19,7 @@ export interface LearningStage {
   iconName: "Terminal" | "GitBranch" | "AudioWaveform" | "Cpu";
   defaultStatus: "current" | "upcoming" | "completed";
   topics: RoadmapTopic[];
+  isComingSoon?: boolean;
 }
 
 export const CORE_ELECTRONICS_STAGES: LearningStage[] = [
@@ -1130,6 +1131,221 @@ export const CORE_ELECTRONICS_STAGES: LearningStage[] = [
     ],
   },
 ];
+
+/**
+ * Stage 05: Verilog HDL (Admin-Only Preview)
+ * Beginner to Intermediate curriculum based on the VLSI Point Verilog Complete Tutorial.
+ * Strictly restricted to authenticated users with the 'admin' Clerk role.
+ */
+export const VERILOG_HDL_STAGE: LearningStage = {
+  id: "verilog-hdl",
+  order: "05",
+  title: "Verilog HDL",
+  target: "Hardware description, synthesis methodology, modeling paradigms and testbench verification",
+  iconName: "Cpu",
+  defaultStatus: "upcoming",
+  topics: [
+    // --- Stage 1: Verilog Fundamentals ---
+    {
+      id: "verilog-intro-hdl",
+      serial: "5.1",
+      title: "Introduction to HDL",
+      refUrl: "https://www.asic-world.com/verilog/intro1.html",
+      refTitle: "ASIC World: Introduction to HDL",
+      stageId: "verilog-hdl",
+      difficulty: "Beginner",
+    },
+    {
+      id: "verilog-abstraction-levels",
+      serial: "5.2",
+      title: "Levels of Abstraction in Verilog",
+      refUrl: "https://www.asic-world.com/verilog/verilog_one_day1.html",
+      refTitle: "Verilog Abstraction Levels Primer",
+      stageId: "verilog-hdl",
+      difficulty: "Beginner",
+    },
+    {
+      id: "verilog-modules-instantiation",
+      serial: "5.3",
+      title: "Modules and Instantiation",
+      refUrl: "https://www.asic-world.com/verilog/syntax1.html",
+      refTitle: "Verilog Module Syntax & Instantiation",
+      stageId: "verilog-hdl",
+      difficulty: "Beginner",
+    },
+    {
+      id: "verilog-simulation-synthesis",
+      serial: "5.4",
+      title: "Simulation, Synthesis and Design Methodology",
+      refUrl: "https://www.asic-world.com/verilog/intro2.html",
+      refTitle: "Simulation & Synthesis Methodology",
+      stageId: "verilog-hdl",
+      difficulty: "Beginner",
+    },
+    {
+      id: "verilog-data-types",
+      serial: "5.5",
+      title: "Data Types in Verilog",
+      refUrl: "https://www.asic-world.com/verilog/data_types1.html",
+      refTitle: "Verilog Fundamental Data Types",
+      stageId: "verilog-hdl",
+      difficulty: "Beginner",
+    },
+    {
+      id: "verilog-net-data-types",
+      serial: "5.6",
+      title: "Net Data Types",
+      refUrl: "https://www.asic-world.com/verilog/data_types2.html",
+      refTitle: "Net Data Types (wire, wand, wor, tri)",
+      stageId: "verilog-hdl",
+      difficulty: "Beginner",
+    },
+    {
+      id: "verilog-register-data-types",
+      serial: "5.7",
+      title: "Register Data Types",
+      refUrl: "https://www.asic-world.com/verilog/data_types3.html",
+      refTitle: "Register Data Types (reg, integer, time)",
+      stageId: "verilog-hdl",
+      difficulty: "Beginner",
+    },
+    {
+      id: "verilog-vectors-arrays-memories",
+      serial: "5.8",
+      title: "Vectors, Arrays, Memories, Parameters and Strings",
+      refUrl: "https://www.asic-world.com/verilog/data_types4.html",
+      refTitle: "Vectors, Memories & Parameters in Verilog",
+      stageId: "verilog-hdl",
+      difficulty: "Beginner",
+    },
+
+    // --- Stage 2: Verilog Operators and Modeling ---
+    {
+      id: "verilog-operators",
+      serial: "5.9",
+      title: "Operators in Verilog",
+      refUrl: "https://www.asic-world.com/verilog/operators1.html",
+      refTitle: "Verilog Arithmetic, Logical & Bitwise Operators",
+      stageId: "verilog-hdl",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "verilog-practice-set",
+      serial: "5.10",
+      title: "Verilog Practice Set",
+      refUrl: "https://hdlbits.01xz.net/wiki/Main_Page",
+      refTitle: "HDLBits Verilog Interactive Exercises",
+      stageId: "verilog-hdl",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "verilog-gate-level-modeling",
+      serial: "5.11",
+      title: "Gate-Level Modeling",
+      refUrl: "https://www.asic-world.com/verilog/gate1.html",
+      refTitle: "Built-in Gate Primitives & Propagation Delays",
+      stageId: "verilog-hdl",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "verilog-dataflow-modeling",
+      serial: "5.12",
+      title: "Dataflow Modeling",
+      refUrl: "https://www.asic-world.com/verilog/dataflow1.html",
+      refTitle: "Continuous Assignment with 'assign' Statements",
+      stageId: "verilog-hdl",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "verilog-behavioral-modeling",
+      serial: "5.13",
+      title: "Behavioral Modeling",
+      refUrl: "https://www.asic-world.com/verilog/behavioral1.html",
+      refTitle: "Procedural 'always' & 'initial' Blocks",
+      stageId: "verilog-hdl",
+      difficulty: "Intermediate",
+    },
+
+    // --- Stage 3: Intermediate Verilog Concepts ---
+    {
+      id: "verilog-compiler-directives-tasks",
+      serial: "5.14",
+      title: "Compiler Directives and System Tasks",
+      refUrl: "https://www.asic-world.com/verilog/system1.html",
+      refTitle: "`timescale, $display, $monitor, and $finish",
+      stageId: "verilog-hdl",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "verilog-tasks-functions",
+      serial: "5.15",
+      title: "Tasks and Functions",
+      refUrl: "https://www.asic-world.com/verilog/task_func1.html",
+      refTitle: "Reusable Verilog Tasks and Functions",
+      stageId: "verilog-hdl",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "verilog-testbench-writing",
+      serial: "5.16",
+      title: "Testbench Writing",
+      refUrl: "https://www.asic-world.com/verilog/art_testbench_writing1.html",
+      refTitle: "Testbench Writing and Stimulus Generation",
+      stageId: "verilog-hdl",
+      difficulty: "Intermediate",
+    },
+  ],
+};
+
+/** Set of stage IDs that are strictly restricted to administrators */
+export const ADMIN_ONLY_STAGE_IDS = new Set<string>(["verilog-hdl"]);
+
+/** Set of topic IDs that belong to admin-only stages */
+export const ADMIN_ONLY_TOPIC_IDS = new Set<string>(
+  VERILOG_HDL_STAGE.topics.map((t) => t.id)
+);
+
+/**
+ * Returns true if the stage requires admin role.
+ */
+export function isStageAdminOnly(stageId: string): boolean {
+  return ADMIN_ONLY_STAGE_IDS.has(stageId);
+}
+
+/**
+ * Returns true if the topic belongs to an admin-only stage.
+ */
+export function isTopicAdminOnly(topicId: string): boolean {
+  return ADMIN_ONLY_TOPIC_IDS.has(topicId);
+}
+
+/**
+ * Placeholder stage for normal students and guests.
+ * Displays the Verilog HDL card with a 'Coming Soon' badge.
+ * topics array is intentionally empty so restricted content is never sent to unauthorized users.
+ */
+export const VERILOG_HDL_COMING_SOON_STAGE: LearningStage = {
+  id: "verilog-hdl",
+  order: "05",
+  title: "Verilog HDL",
+  target: "Hardware description, synthesis methodology, modeling paradigms and testbench verification",
+  iconName: "Cpu",
+  defaultStatus: "upcoming",
+  isComingSoon: true,
+  topics: [],
+};
+
+/**
+ * Returns the list of roadmap stages based on whether the caller has verified admin access.
+ * Non-admin students and guests receive the Verilog HDL stage flagged with isComingSoon: true and empty topics.
+ * Admin users receive the full VERILOG_HDL_STAGE with all 16 topics.
+ */
+export function getRoadmapStages(isAdmin: boolean = false): LearningStage[] {
+  if (isAdmin) {
+    return [...CORE_ELECTRONICS_STAGES, VERILOG_HDL_STAGE];
+  }
+  return [...CORE_ELECTRONICS_STAGES, VERILOG_HDL_COMING_SOON_STAGE];
+}
 
 // Local storage keys for progress persistence (read-only for legacy data)
 export const STORAGE_COMPLETED_TOPICS_KEY = "preppilot_completed_topics";

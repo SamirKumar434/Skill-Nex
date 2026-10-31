@@ -42,7 +42,7 @@ export function LearningStageGrid({
             Your Learning Roadmap
           </h2>
           <p className="text-xs text-[#94A3B8] mt-0.5">
-            Master core electronics sequentially across 4 structured stages
+            Master core electronics sequentially across {stages.length} structured stages
           </p>
         </div>
       </div>
