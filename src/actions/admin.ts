@@ -5,10 +5,12 @@ import {
   getAdminOverviewStats,
   getAdminStudentsList,
   getAdminStudentDetails,
+  getAdminContentAnalytics,
   type AdminOverviewStats,
   type StudentListQueryOptions,
   type StudentProgressSummary,
   type AdminStudentDetailData,
+  type AdminContentAnalyticsData,
 } from "@/lib/admin/dashboard";
 
 export interface AdminActionResult<T> {
@@ -69,6 +71,24 @@ export async function getAdminStudentDetailAction(
     const message = error instanceof Error ? error.message : String(error);
     console.error("[SkillNex Admin Action] getAdminStudentDetailAction error:", message);
     return { success: false, error: message || "Failed to load student details." };
+  }
+}
+
+/**
+ * Server Action: Fetches deep curriculum and topic engagement analytics for admins.
+ * Verifies admin privileges server-side.
+ */
+export async function getAdminContentAnalyticsAction(): Promise<
+  AdminActionResult<AdminContentAnalyticsData>
+> {
+  try {
+    await requireAdmin();
+    const data = await getAdminContentAnalytics({ skipAuth: true });
+    return { success: true, data };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[SkillNex Admin Action] getAdminContentAnalyticsAction error:", message);
+    return { success: false, error: message || "Failed to load content analytics." };
   }
 }
 

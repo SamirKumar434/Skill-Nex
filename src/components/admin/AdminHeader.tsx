@@ -22,6 +22,9 @@ export function AdminHeader({ onOpenMobileSidebar }: AdminHeaderProps) {
     if (pathname.startsWith("/admin/students/")) {
       return { title: "Student Details", subtitle: "Curriculum mastery breakdown and activity heatmap" };
     }
+    if (pathname.startsWith("/admin/analytics")) {
+      return { title: "Content Analytics", subtitle: "Curriculum engagement, topic completion rates, and learning drop-offs" };
+    }
     return { title: "Admin Console", subtitle: "SkillNex ECE monitoring" };
   };
 

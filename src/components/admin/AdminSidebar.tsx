@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
+  BarChart3,
   ArrowLeft,
   X,
   ChevronLeft,
@@ -35,6 +36,12 @@ export function AdminSidebar({ isOpenMobile, onCloseMobile }: AdminSidebarProps)
       href: "/admin/students",
       icon: Users,
       isActive: pathname.startsWith("/admin/students"),
+    },
+    {
+      label: "Content Analytics",
+      href: "/admin/analytics",
+      icon: BarChart3,
+      isActive: pathname.startsWith("/admin/analytics"),
     },
   ];
 
