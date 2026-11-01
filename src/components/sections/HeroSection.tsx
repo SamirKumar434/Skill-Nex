@@ -6,20 +6,24 @@ import { Button } from "@/components/ui/Button";
 
 const cppLiveCode = `class SkillNex {
 private:
-    vector<string> patterns = {
-        "Two Pointers",
-        "Sliding Window",
-        "Dynamic Programming"
+    vector<string> skills = {
+        "C Programming",
+        "Analog Electronics",
+        "Digital Electronics",
+        "Data Structures",
+        "Verilog HDL"
     };
+
     AIAssistant mentor;
 
 public:
-    void crackInterview() {
-        for (const auto& pattern : patterns) {
-            mentor.masterPatterns(pattern);
+    void buildMySkills() {
+        for (const auto& skill : skills) {
+            mentor.learnWithYou(skill);
         }
-        // Placement ready! 🚀
     }
+
+    // From circuits to code. 🚀
 };`;
 
 const codeSnippets: Record<string, { filename: string; code: string[] }> = {
@@ -32,27 +36,41 @@ const codeSnippets: Record<string, { filename: string; code: string[] }> = {
     code: [
       "class SkillNex:",
       "    def __init__(self):",
-      '        self.patterns = ["Sliding Window", "Intervals", "Graphs"]',
-      "        self.ai_coach = AICoach()",
+      "        self.skills = [",
+      '            "C Programming",',
+      '            "Analog Electronics",',
+      '            "Digital Electronics",',
+      '            "Data Structures",',
+      '            "Verilog HDL",',
+      "        ]",
+      "        self.mentor = AIAssistant()",
       "",
-      "    def crack_the_code(self):",
-      "        for pattern in self.patterns:",
-      "            self.ai_coach.explain_intuition(pattern)",
-      "            self.ai_coach.simulate_mock_interview()",
-      "        # Ready for top tech interviews! 🚀",
+      "    def build_my_skills(self):",
+      "        for skill in self.skills:",
+      "            self.mentor.learn_with_you(skill)",
+      "",
+      "        # From circuits to code. 🚀",
     ],
   },
   java: {
     filename: "SKILLNEX.JAVA",
     code: [
       "public class SkillNex {",
-      "    private final List<String> patterns = List.of(",
-      '        "Binary Search", "Two Pointers", "Tree DFS"',
+      "    private final List<String> skills = List.of(",
+      '        "C Programming",',
+      '        "Analog Electronics",',
+      '        "Digital Electronics",',
+      '        "Data Structures",',
+      '        "Verilog HDL"',
       "    );",
+      "    private AIAssistant mentor;",
       "",
-      "    public void crackTheCode() {",
-      "        patterns.forEach(PatternVisualizer::render);",
-      "        System.out.println(\"Offer received! 🎉\");",
+      "    public void buildMySkills() {",
+      "        for (String skill : skills) {",
+      "            mentor.learnWithYou(skill);",
+      "        }",
+      "",
+      "        // From circuits to code. 🚀",
       "    }",
       "}",
     ],
@@ -246,8 +264,8 @@ export function HeroSection() {
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-[#F8FAFC] tracking-tight leading-[1.2] sm:leading-[1.14]">
               SkillNex — <br className="hidden sm:inline" />
               <span className="text-white">From Learning to </span>
-              <span className="text-[#A855F7] drop-shadow-[0_0_35px_rgba(168,85,247,0.4)]">
-                Placement-Ready.
+              <span className="text-[#A855F7] drop-shadow-[0_0_35px_rgba(168,85,247,0.4)] inline-block">
+                <span className="inline-block animate-swipe-placement">Placement</span><span className="inline-block animate-swipe-hyphen">-</span><span className="inline-block animate-swipe-ready">Ready.</span>
               </span>
             </h1>
 
