@@ -26,7 +26,7 @@ interface ProgressContextValue {
   toggleTopic: (topicId: string) => Promise<boolean>;
   toggleDsaQuestion: (questionId: string) => Promise<boolean>;
   updateProblemStatus: (problemId: string, status: ProblemStatus) => Promise<boolean>;
-  openSignInPrompt: () => void;
+  openSignInPrompt: (mode?: "prompt" | "signIn" | "signUp") => void;
   closeSignInPrompt: () => void;
   refreshProgress: () => Promise<void>;
   clearError: () => void;
@@ -42,6 +42,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isSignInModalOpen, setIsSignInModalOpen] = useState<boolean>(false);
+  const [signInModalMode, setSignInModalMode] = useState<"prompt" | "signIn" | "signUp">("prompt");
 
   const activeUserIdRef = useRef<string | null>(null);
   const isFetchingRef = useRef<boolean>(false);
@@ -97,6 +98,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         activeUserIdRef.current = userId;
         fetchProgress();
       }
+      setIsSignInModalOpen(false);
     } else {
       if (activeUserIdRef.current !== null) {
         activeUserIdRef.current = null;
@@ -108,7 +110,8 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isLoaded, isSignedIn, userId, fetchProgress]);
 
-  const openSignInPrompt = useCallback(() => {
+  const openSignInPrompt = useCallback((mode: "prompt" | "signIn" | "signUp" = "prompt") => {
+    setSignInModalMode(mode);
     setIsSignInModalOpen(true);
   }, []);
 
@@ -242,6 +245,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       <SignInPromptModal
         isOpen={isSignInModalOpen}
         onClose={closeSignInPrompt}
+        initialMode={signInModalMode}
       />
     </ProgressContext.Provider>
   );
